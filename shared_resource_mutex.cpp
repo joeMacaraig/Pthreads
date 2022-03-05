@@ -1,8 +1,9 @@
 //shared_resource_mutex.cpp
 
 /*
-Compile: g++ -o shared_resouce_mutex shared_resource_mutex.cpp -lpthread
+Compile: g++ -o shared_resource_mutex shared_resource_mutex.cpp -lpthread
 Execute: ./shared_resource_mutex
+Try to execute: $time./shared_resource_mutex
 */
 
 #include <stdio.h>
@@ -17,7 +18,9 @@ void* inc_dec_resource(void* arg){
     //get the pointer from main thread and dereference it to put the value in resource_value
     int resource_value = *(int *) arg;
     for(int i=0; i < iterations; i++){
+        pthread_mutex_lock(&mutex);//added the lock
         shared_resource += resource_value;
+        pthread_mutex_unlock(&mutex);//added unlock... doing so gives an output of 0
     }
     pthread_exit(NULL);
 }
@@ -31,8 +34,8 @@ int main(void){
     // Thread 2 to increment shared resource
     int value2 = -1;
     pthread_create(&tid2, NULL, inc_dec_resource, &value2);
-    pthread_join(tid2, NULL);
-    pthread_join(tid1, NULL);
+    pthread_join(tid2, NULL); //switched tid1 and tid2
+    pthread_join(tid1, NULL); //no difference on output before adding lock and unlock
     printf("Shared resource value: %lld\n", shared_resource);
 
     return 0;
